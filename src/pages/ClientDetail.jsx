@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Phone, Building2, MapPin, Edit, Trash2, FileText, Doll
 import toast from 'react-hot-toast';
 import { Button, Card } from '../components/UI';
 import { LoadingOverlay } from '../components/Loading';
+import { api } from '../services/api';
 
 export default function ClientDetailPage() {
     const { id } = useParams();
@@ -20,30 +21,17 @@ export default function ClientDetailPage() {
     const fetchClientData = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('auth_token');
 
-            // Fetch client details
-            const clientRes = await fetch(`http://localhost:3000/api/clients/${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const clientData = await clientRes.json();
-            if (!clientRes.ok) throw new Error(clientData.message);
-            setClient(clientData.client);
+            // Fetch client data in parallel
+            const [clientRes, invoicesRes, statsRes] = await Promise.all([
+                api.clients.getById(id),
+                api.clients.getInvoices(id),
+                api.clients.getStats(id)
+            ]);
 
-            // Fetch client invoices
-            const invoicesRes = await fetch(`http://localhost:3000/api/clients/${id}/invoices`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const invoicesData = await invoicesRes.json();
-            if (invoicesRes.ok) setInvoices(invoicesData.invoices);
-
-            // Fetch client stats
-            const statsRes = await fetch(`http://localhost:3000/api/clients/${id}/stats`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const statsData = await statsRes.json();
-            if (statsRes.ok) setStats(statsData.stats);
-
+            setClient(clientRes.data.client);
+            setInvoices(invoicesRes.data.invoices);
+            setStats(statsRes.data.stats);
         } catch (error) {
             console.error('Fetch error:', error);
             toast.error(error.message || 'Failed to load client');
@@ -57,14 +45,8 @@ export default function ClientDetailPage() {
         if (!confirm('Are you sure you want to deactivate this client?')) return;
 
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(`http://localhost:3000/api/clients/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
+            const response = await api.clients.delete(id);
+            if (response.status !== 200) throw new Error(response.data.message);
 
             toast.success('Client deactivated successfully');
             navigate('/clients');

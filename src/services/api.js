@@ -87,6 +87,15 @@ export const api = {
         detectCountry: () => apiClient.get('/subscriptions/detect-country'),
         create: (data) => apiClient.post('/subscriptions/create', data),
     },
+    clients: {
+        getAll: (params) => apiClient.get('/clients', { params }),
+        getById: (id) => apiClient.get(`/clients/${id}`),
+        getInvoices: (id) => apiClient.get(`/clients/${id}/invoices`),
+        getStats: (id) => apiClient.get(`/clients/${id}/stats`),
+        create: (data) => apiClient.post('/clients', data),
+        update: (id, data) => apiClient.put(`/clients/${id}`, data),
+        delete: (id) => apiClient.delete(`/clients/${id}`),
+    },
 };
 
 export default apiClient;

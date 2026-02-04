@@ -4,6 +4,7 @@ import { Users, Plus, Search, Filter, Mail, Phone, Building2, Eye } from 'lucide
 import toast from 'react-hot-toast';
 import { Button, Card } from '../components/UI';
 import { LoadingOverlay } from '../components/Loading';
+import { api } from '../services/api';
 
 export default function ClientsPage() {
     const navigate = useNavigate();
@@ -21,28 +22,15 @@ export default function ClientsPage() {
     const fetchClients = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('auth_token');
-            const params = new URLSearchParams({
+            const response = await api.clients.getAll({
                 page,
                 limit: 20,
                 search,
                 status: statusFilter
             });
 
-            const response = await fetch(`http://localhost:3000/api/clients?${params}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to fetch clients');
-            }
-
-            setClients(data.clients);
-            setPagination(data.pagination);
+            setClients(response.data.clients);
+            setPagination(response.data.pagination);
         } catch (error) {
             console.error('Fetch clients error:', error);
             toast.error(error.message || 'Failed to load clients');

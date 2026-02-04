@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button, Card } from '../components/UI';
 import { LoadingOverlay } from '../components/Loading';
+import { api } from '../services/api';
 
 export default function ClientFormPage() {
     const { id } = useParams();
@@ -31,13 +32,8 @@ export default function ClientFormPage() {
     const fetchClient = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(`http://localhost:3000/api/clients/${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
+            const response = await api.clients.getById(id);
+            const data = response.data;
 
             setFormData({
                 name: data.client.name || '',
@@ -91,25 +87,13 @@ export default function ClientFormPage() {
 
         try {
             setSubmitting(true);
-            const token = localStorage.getItem('auth_token');
+            const response = isEdit
+                ? await api.clients.update(id, formData)
+                : await api.clients.create(formData);
 
-            const response = await fetch(
-                isEdit
-                    ? `http://localhost:3000/api/clients/${id}`
-                    : 'http://localhost:3000/api/clients',
-                {
-                    method: isEdit ? 'PUT' : 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                }
-            );
+            const data = response.data;
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (response.status !== 200 && response.status !== 201) {
                 // Handle validation errors from backend
                 if (data.details) {
                     const backendErrors = {};
