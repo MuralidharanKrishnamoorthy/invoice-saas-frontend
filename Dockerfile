@@ -21,18 +21,11 @@ FROM nginx:alpine
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration as a template for environment variable substitution
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port (Railway will override this with the actual port)
+# Expose port (Railway will use this to route traffic)
 EXPOSE 80
 
-# Health check using the dynamic port
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:${PORT}/health || exit 1
-
-# Start nginx (Nginx docker image automatically processes templates in /etc/nginx/templates/)
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
-
-
-
