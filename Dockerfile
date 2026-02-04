@@ -22,8 +22,11 @@ FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration as a template for environment variable substitution
-# The Nginx image automatically processes .template files in /etc/nginx/templates/
 COPY nginx.conf /etc/nginx/templates/default.conf.template
+
+# Disable the problematic default IPv6 listener script in the Nginx image
+RUN rm -f /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
