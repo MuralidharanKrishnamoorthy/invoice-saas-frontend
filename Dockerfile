@@ -21,11 +21,9 @@ FROM nginx:alpine
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port (Railway will use this to route traffic)
-EXPOSE 80
+# Copy nginx configuration as a template for environment variable substitution
+# The Nginx image automatically processes .template files in /etc/nginx/templates/
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
