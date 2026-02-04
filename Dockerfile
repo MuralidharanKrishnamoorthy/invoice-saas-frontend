@@ -21,6 +21,10 @@ FROM nginx:alpine
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Ensure the nginx user can read the files
+RUN chown -R nginx:nginx /usr/share/nginx/html && chmod -R 755 /usr/share/nginx/html
+
+
 # Copy nginx template (nginx image handles envsubst automatically here)
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 
