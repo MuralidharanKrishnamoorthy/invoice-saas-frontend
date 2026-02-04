@@ -21,9 +21,8 @@ FROM nginx:alpine
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# The official Nginx image handles envsubst automatically if you put 
-# your template in /etc/nginx/templates/
+# Copy nginx template (nginx image handles envsubst automatically here)
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 
-# Start nginx
+# Start nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]
