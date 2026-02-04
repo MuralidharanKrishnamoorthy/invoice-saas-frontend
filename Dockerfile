@@ -21,11 +21,11 @@ FROM nginx:alpine
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx configuration as a template
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 
-# Expose the fixed port
-EXPOSE 8080
+# Install envsubst (it's in gettext package in alpine)
+RUN apk add --no-cache gettext
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Use envsubst to replace $PORT in the template and start nginx
+CMD ["/bin/sh", "-c", "envsubst '${PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
